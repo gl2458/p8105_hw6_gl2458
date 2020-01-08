@@ -1,28 +1,40 @@
 ---
 title: "p8105_hw6_gl2458"
+author: "Rachel Lee"
+data: "01/08/2020"
 output: gihub_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(modelr)
+library(mgcv)
+library(purrr)
+library(mlbench)
+library(ggplot2)
+library(broom)
+library(patchwork)
+theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
-## R Markdown
+Problem 1: 
+a) Import and clean childbirth dataset.Convert numeric to factor and check for missing data. 
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r p1_data_import_tidying, message=FALSE}
+child_data = read_csv("./data/birthweight.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(babysex = as.factor(babysex))%>% 
+  mutate(frace = as.factor(frace))%>% 
+  mutate(mrace = as.factor(mrace))%>% 
+  mutate(malform = as.factor(malform)) %>% 
+  mutate(parity = as.factor(parity)) %>% 
+  select(-pnumlbw, -pnumsga) %>%  
+  select(bwt, babysex, everything())
 ```
 
-## Including Plots
+By mutating, babysex, father's race, mother's race, presence of malformations, and parity are converted to factors from numeric. Previous number of low birth weight babies (pnumlbw) and number of prior small for gestational age babies (pnumsga) are excluded from the data.
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+b) Propose a regression model
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
