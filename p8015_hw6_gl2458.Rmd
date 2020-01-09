@@ -35,7 +35,42 @@ child_data = read_csv("./data/birthweight.csv") %>%
 
 By mutating, babysex, father's race, mother's race, presence of malformations, and parity are converted to factors from numeric. Previous number of low birth weight babies (pnumlbw) and number of prior small for gestational age babies (pnumsga) are excluded from the data.
 
-
 b) Propose a regression model
 
+Regression model using *stepwise regression* with *backward elimination*. Predictor selection is performed by sequentially eliminating predictors that lower Akaike information criterion. 
+
+```{r p1_modelselection, results=FALSE}
+fit_mlr_child_bwt = lm(bwt ~ ., data = child_data)
+backward_elim_child_bwt_predictors =
+  step(fit_mlr_child_bwt, direction = "backward") %>% 
+  broom::tidy() %>% 
+  knitr::kable()
+# stepwise regression with backward elimination
+```
+
+The selected regression model includes the following predictors: 
+`r backward_elim_child_bwt_predictors %>% t() %>% knitr::kable()`
+
+Proposed regression model: 
+```{r p1_new_model}
+new_mlr_child_bwt = 
+  lm(bwt ~ parity + fincome + babysex + mheight + ppwt + gaweeks + smoken + delwt + mrace + blength + bhead, data = child_data)
+new_mlr_child_bwt %>% 
+  broom::tidy()
+```
+
+Plotting model residuals against fitted model with add_predictions and add_residuals.
+
+```{r p1_model_prediction_vs_residuals}
+child_data %>% 
+  add_predictions(new_mlr_child_bwt) %>% 
+  add_residuals(new_mlr_child_bwt) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.4) +
+  labs(
+    title = "Residuals vs Fitted Values",
+    x = "Fitted Values", 
+    y = "Residuals"
+  )
+```
 
