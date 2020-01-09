@@ -74,3 +74,62 @@ child_data %>%
   )
 ```
 
+
+### Comparing the selected model to following two models: 
+
+MLR_1 : Main effects only (predictors - length at birth and gestational age)
+
+MLR_2 : Three way interactions (predictors - head circumference, length, sex, and all interactions)
+
+Cross validation is carried out in the below code chunk. Moreover, the spread of *root mean squares* of the three models is plotted.
+
+```{r p1_model_comparisons}
+set.seed(1)
+fit_mlr_1 = lm(bwt ~ blength + gaweeks, data = child_data)
+fit_mlr_2 = lm(bwt ~ bhead*blength*babysex, data = child_data) 
+# multiple regression with interaction
+xval_df = 
+  crossv_mc(child_data, n = 100) %>% 
+  mutate(train = map(train, as_tibble),
+         test = map(test, as_tibble)) 
+xval_df = xval_df %>% 
+  mutate(proposed_mlr  = map(train, ~lm(bwt ~ parity + fincome + babysex + mheight + ppwt + gaweeks + smoken + delwt + mrace + blength + bhead, data = child_data)),
+         mlr_1 = map(train, ~lm(bwt ~ blength + gaweeks, data = child_data)),
+         mlr_2 = map(train, ~lm(bwt ~ bhead*blength*babysex, data = child_data))
+  ) %>% 
+  mutate(rmse_proposed  = map2_dbl(proposed_mlr,  test, ~rmse(model = .x, data = .y)),
+         rmse_mlr_1 = map2_dbl(mlr_1, test, ~rmse(model = .x, data = .y)),
+         rmse_mlr_2 = map2_dbl(mlr_2, test, ~rmse(model = .x, data = .y))
+  )
+xval_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(), 
+    names_to = "model",
+    values_to = "rmse", 
+    names_prefix = "rmse_") %>%  
+  mutate(model =   fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin() + 
+  labs(
+    title = "Comparison of the selected model to two alternative models",
+    x = "Models", 
+    y = "Root mean squares"
+  )
+```
+
+The selected model from backward elimination stepwise regression has the smallest room mean square spread which indicates. This proves that the model selection methods was approriate. The plots of the two alternative models suggest that the model with three-way interactions is a better fit than the model with only main effects. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
