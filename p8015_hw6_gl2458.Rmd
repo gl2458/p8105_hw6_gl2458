@@ -172,7 +172,7 @@ results %>%
 ```
 
 
-The below table shows the 95% CI for log_b0_b1
+The below table shows the 95% CI for log(β̂0∗β̂1)
 
 ```{r p2_95CI_coefficient}
 results %>% 
@@ -182,6 +182,21 @@ results %>%
 ```
 
 
+
+```{r p2_plots, message=FALSE}
+r.squared = results %>% 
+  ggplot(aes(x = r.squared)) + 
+  geom_histogram() + 
+  geom_density() +
+  theme_minimal() 
+log_b0_b1 = results %>% 
+  ggplot(aes(x = log_b0_b1)) + 
+  geom_histogram() + 
+  geom_density() +
+  theme_minimal()
+r.squared + log_b0_b1
+```
+Both histograms above are normally distributed. The mean of r-squared is `r results %>% pull(r.squared) %>% mean` and mean for log_b0_b1 is `r results %>% pull(log_b0_b1) %>% mean`.
 
 
 
