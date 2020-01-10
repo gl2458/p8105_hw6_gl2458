@@ -172,6 +172,14 @@ results %>%
 ```
 
 
+The below table shows the 95% CI for log_b0_b1
+
+```{r p2_95CI_coefficient}
+results %>% 
+  pull(log_b0_b1) %>% 
+  quantile(c(0.025, 0.975)) %>% 
+  knitr::kable(col.names = "Coeffcient")
+```
 
 
 
