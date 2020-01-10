@@ -122,9 +122,54 @@ The selected model from backward elimination stepwise regression has the smalles
 
 
 
+# Problem 2
+
+Importing data
+```{r p2_impor_data, message= FALSE}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
 
 
+Create results  
 
+```{r p2_create_results}
+results = weather_df %>% 
+  modelr::bootstrap(n = 5000) %>% 
+  mutate(
+    models = map(strap, ~ lm(tmax ~ tmin, data = .x)),
+    results = map(models, broom::tidy),
+    glance = map(models, broom::glance)) %>% 
+  select(results, glance, .id) %>% 
+  unnest(results) %>% 
+  pivot_wider( 
+    names_from = term,
+    values_from = c(estimate, std.error, glance),
+    id_cols = .id, 
+    ) %>%
+  janitor::clean_names() %>%
+  mutate(
+    log_b0_b1 = log(estimate_intercept * estimate_tmin)
+  ) %>%
+  unnest(c(glance_intercept))
+```
+
+Below table shows the 95% confidence interval for R-squared. 
+```{r p2_95CI_rsquared}
+results %>% 
+  pull(r.squared) %>% 
+  quantile(c(0.025, 0.975)) %>% 
+  knitr::kable(col.names = "R squared")
+```
 
 
 
